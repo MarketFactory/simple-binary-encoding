@@ -426,23 +426,27 @@ public class CSharpGenerator implements CodeGenerator
                     byteOrderStr));
 
                 sb.append(String.format("\n" +
-                    indent + "public int Get%1$s(byte[] dst, int dstOffset, int length) =>\n" +
-                    indent + INDENT + "Get%1$s(new Span<byte>(dst, dstOffset, length));\n",
+                    "%1$s" +
+                    indent + "public int Get%2$s(byte[] dst, int dstOffset, int length) =>\n" +
+                    indent + INDENT + "Get%2$s(new Span<byte>(dst, dstOffset, length));\n",
+                    generateDocumentation(indent, token),
                     propertyName));
 
                 sb.append(String.format("\n" +
-                    indent + "public int Get%1$s(Span<byte> dst)\n" +
+                    "%1$s" +
+                    indent + "public int Get%2$s(Span<byte> dst)\n" +
                     indent + "{\n" +
-                    "%2$s" +
-                    indent + INDENT + "const int sizeOfLengthField = %3$d;\n" +
+                    "%3$s" +
+                    indent + INDENT + "const int sizeOfLengthField = %4$d;\n" +
                     indent + INDENT + "int limit = _parentMessage.Limit;\n" +
                     indent + INDENT + "_buffer.CheckLimit(limit + sizeOfLengthField);\n" +
-                    indent + INDENT + "int dataLength = (int)_buffer.%4$sGet%5$s(limit);\n" +
+                    indent + INDENT + "int dataLength = (int)_buffer.%5$sGet%6$s(limit);\n" +
                     indent + INDENT + "int bytesCopied = Math.Min(dst.Length, dataLength);\n" +
                     indent + INDENT + "_parentMessage.Limit = limit + sizeOfLengthField + dataLength;\n" +
                     indent + INDENT + "_buffer.GetBytes(limit + sizeOfLengthField, dst.Slice(0, bytesCopied));\n\n" +
                     indent + INDENT + "return bytesCopied;\n" +
                     indent + "}\n",
+                    generateDocumentation(indent, token),
                     propertyName,
                     generateArrayFieldNotPresentCondition(token.version(), indent),
                     sizeOfLengthField,
@@ -450,39 +454,43 @@ public class CSharpGenerator implements CodeGenerator
                     byteOrderStr));
 
                 sb.append(String.format(indent + "\n" +
-                    indent + "// Allocates and returns a new byte array\n" +
-                    indent + "public byte[] Get%1$sBytes()\n" +
+                    "%1$s" +
+                    indent + "public byte[] Get%2$sBytes()\n" +
                     indent + "{\n" +
-                    indent + INDENT + "const int sizeOfLengthField = %2$d;\n" +
+                    indent + INDENT + "const int sizeOfLengthField = %3$d;\n" +
                     indent + INDENT + "int limit = _parentMessage.Limit;\n" +
                     indent + INDENT + "_buffer.CheckLimit(limit + sizeOfLengthField);\n" +
-                    indent + INDENT + "int dataLength = (int)_buffer.%3$sGet%4$s(limit);\n" +
+                    indent + INDENT + "int dataLength = (int)_buffer.%4$sGet%5$s(limit);\n" +
                     indent + INDENT + "byte[] data = new byte[dataLength];\n" +
                     indent + INDENT + "_parentMessage.Limit = limit + sizeOfLengthField + dataLength;\n" +
                     indent + INDENT + "_buffer.GetBytes(limit + sizeOfLengthField, data);\n\n" +
                     indent + INDENT + "return data;\n" +
                     indent + "}\n",
+                    generateDocumentation(indent, token, "Allocates and returns a new byte array."),
                     propertyName,
                     sizeOfLengthField,
                     lengthTypePrefix,
                     byteOrderStr));
 
                 sb.append(String.format("\n" +
-                    indent + "public int Set%1$s(byte[] src, int srcOffset, int length) =>\n" +
-                    indent + INDENT + "Set%1$s(new ReadOnlySpan<byte>(src, srcOffset, length));\n",
+                    "%1$s" +
+                    indent + "public int Set%2$s(byte[] src, int srcOffset, int length) =>\n" +
+                    indent + INDENT + "Set%2$s(new ReadOnlySpan<byte>(src, srcOffset, length));\n",
+                    generateDocumentation(indent, token),
                     propertyName));
 
-                sb.append(generateDocumentation(indent + INDENT, token));
                 sb.append(String.format("\n" +
-                    indent + "public int Set%1$s(ReadOnlySpan<byte> src)\n" +
+                    "%1$s" +
+                    indent + "public int Set%2$s(ReadOnlySpan<byte> src)\n" +
                     indent + "{\n" +
-                    indent + INDENT + "const int sizeOfLengthField = %2$d;\n" +
+                    indent + INDENT + "const int sizeOfLengthField = %3$d;\n" +
                     indent + INDENT + "int limit = _parentMessage.Limit;\n" +
                     indent + INDENT + "_parentMessage.Limit = limit + sizeOfLengthField + src.Length;\n" +
-                    indent + INDENT + "_buffer.%3$sPut%5$s(limit, (%4$s)src.Length);\n" +
+                    indent + INDENT + "_buffer.%4$sPut%6$s(limit, (%5$s)src.Length);\n" +
                     indent + INDENT + "_buffer.SetBytes(limit + sizeOfLengthField, src);\n\n" +
                     indent + INDENT + "return src.Length;\n" +
                     indent + "}\n",
+                    generateDocumentation(indent, token),
                     propertyName,
                     sizeOfLengthField,
                     lengthTypePrefix,
@@ -492,28 +500,30 @@ public class CSharpGenerator implements CodeGenerator
                 if (characterEncoding != null)  // only generate these string based methods if there is an encoding
                 {
                     sb.append(lineSeparator());
-                    sb.append(generateDocumentation(indent + INDENT, token));
                     sb.append(String.format(
-                        indent + "public string Get%1$s()\n" +
+                        "%1$s" +
+                        indent + "public string Get%2$s()\n" +
                         indent + "{\n" +
-                        indent + INDENT + "const int sizeOfLengthField = %2$d;\n" +
+                        indent + INDENT + "const int sizeOfLengthField = %3$d;\n" +
                         indent + INDENT + "int limit = _parentMessage.Limit;\n" +
                         indent + INDENT + "_buffer.CheckLimit(limit + sizeOfLengthField);\n" +
-                        indent + INDENT + "int dataLength = (int)_buffer.%3$sGet%4$s(limit);\n" +
+                        indent + INDENT + "int dataLength = (int)_buffer.%4$sGet%5$s(limit);\n" +
                         indent + INDENT + "_parentMessage.Limit = limit + sizeOfLengthField + dataLength;\n" +
-                        indent + INDENT + "return _buffer.GetStringFromBytes(%1$sResolvedCharacterEncoding," +
+                        indent + INDENT + "return _buffer.GetStringFromBytes(%2$sResolvedCharacterEncoding," +
                         " limit + sizeOfLengthField, dataLength);\n" +
                         indent + "}\n\n" +
-                        indent + "public void Set%1$s(string value)\n" +
+                        "%1$s" +
+                        indent + "public void Set%2$s(string value)\n" +
                         indent + "{\n" +
-                        indent + INDENT + "var encoding = %1$sResolvedCharacterEncoding;\n" +
-                        indent + INDENT + "const int sizeOfLengthField = %2$d;\n" +
+                        indent + INDENT + "var encoding = %2$sResolvedCharacterEncoding;\n" +
+                        indent + INDENT + "const int sizeOfLengthField = %3$d;\n" +
                         indent + INDENT + "int limit = _parentMessage.Limit;\n" +
                         indent + INDENT + "int byteCount = _buffer.SetBytesFromString(encoding, value, " +
                         "limit + sizeOfLengthField);\n" +
                         indent + INDENT + "_parentMessage.Limit = limit + sizeOfLengthField + byteCount;\n" +
-                        indent + INDENT + "_buffer.%3$sPut%4$s(limit, (ushort)byteCount);\n" +
+                        indent + INDENT + "_buffer.%4$sPut%5$s(limit, (ushort)byteCount);\n" +
                         indent + "}\n",
+                        generateDocumentation(indent, token),
                         propertyName, sizeOfLengthField, lengthTypePrefix, byteOrderStr));
                 }
             }
@@ -695,16 +705,33 @@ public class CSharpGenerator implements CodeGenerator
 
     private static String generateDocumentation(final String indent, final Token token)
     {
+        return generateDocumentation(indent, token, null);
+    }
+
+    private static String generateDocumentation(final String indent, final Token token, final String extraText)
+    {
         final String description = token.description();
-        if (null == description || description.isEmpty())
+        if (isEmpty(description) && isEmpty(extraText))
         {
             return "";
         }
 
-        return
-            indent + "/// <summary>\n" +
-            indent + "/// " + description + "\n" +
-            indent + "/// </summary>\n";
+        String comment = indent + "/// <summary>\n";
+        if (!isEmpty(description))
+        {
+            comment += indent + "/// " + description + "\n";
+        }
+        if (!isEmpty(extraText))
+        {
+            comment += indent + "/// " + extraText + "\n";
+        }
+        comment += indent + "/// </summary>\n";
+        return comment;
+    }
+
+    private static boolean isEmpty(final String value)
+    {
+        return null == value || value.isEmpty();
     }
 
     private void generateMetaAttributeEnum() throws IOException
