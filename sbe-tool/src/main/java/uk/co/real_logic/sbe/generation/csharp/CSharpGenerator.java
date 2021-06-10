@@ -472,6 +472,7 @@ public class CSharpGenerator implements CodeGenerator
                     indent + INDENT + "Set%1$s(new ReadOnlySpan<byte>(src, srcOffset, length));\n",
                     propertyName));
 
+                sb.append(generateDocumentation(indent + INDENT, token));
                 sb.append(String.format("\n" +
                     indent + "public int Set%1$s(ReadOnlySpan<byte> src)\n" +
                     indent + "{\n" +
@@ -490,8 +491,9 @@ public class CSharpGenerator implements CodeGenerator
 
                 if (characterEncoding != null)  // only generate these string based methods if there is an encoding
                 {
-                    sb.append(lineSeparator())
-                        .append(String.format(
+                    sb.append(lineSeparator());
+                    sb.append(generateDocumentation(indent + INDENT, token));
+                    sb.append(String.format(
                         indent + "public string Get%1$s()\n" +
                         indent + "{\n" +
                         indent + INDENT + "const int sizeOfLengthField = %2$d;\n" +
@@ -977,58 +979,69 @@ public class CSharpGenerator implements CodeGenerator
             generateCharacterEncodingMethod(sb, propertyName, typeToken.encoding().characterEncoding(), indent);
 
             sb.append(String.format("\n" +
-                indent + "public int Get%1$s(byte[] dst, int dstOffset)\n" +
+                "%1$s" +
+                indent + "public int Get%2$s(byte[] dst, int dstOffset)\n" +
                 indent + "{\n" +
-                indent + INDENT + "const int length = %2$d;\n" +
-                "%3$s" +
-                indent + INDENT + "return Get%1$s(new Span<byte>(dst, dstOffset, length));\n" +
+                indent + INDENT + "const int length = %3$d;\n" +
+                "%4$s" +
+                indent + INDENT + "return Get%2$s(new Span<byte>(dst, dstOffset, length));\n" +
                 indent + "}\n",
+                generateDocumentation(indent, fieldToken),
                 propName, fieldLength, generateArrayFieldNotPresentCondition(fieldToken.version(), indent), offset));
 
             sb.append(String.format("\n" +
-                indent + "public int Get%1$s(Span<byte> dst)\n" +
+                "%1$s" +
+                indent + "public int Get%2$s(Span<byte> dst)\n" +
                 indent + "{\n" +
-                indent + INDENT + "const int length = %2$d;\n" +
+                indent + INDENT + "const int length = %3$d;\n" +
                 indent + INDENT + "if (dst.Length < length)\n" +
                 indent + INDENT + "{\n" +
                 indent + INDENT + INDENT + "ThrowHelper.ThrowWhenSpanLengthTooSmall(dst.Length);\n" +
                 indent + INDENT + "}\n\n" +
-                "%3$s" +
-                indent + INDENT + "_buffer.GetBytes(_offset + %4$d, dst);\n" +
+                "%4$s" +
+                indent + INDENT + "_buffer.GetBytes(_offset + %5$d, dst);\n" +
                 indent + INDENT + "return length;\n" +
                 indent + "}\n",
+                generateDocumentation(indent, fieldToken),
                 propName, fieldLength, generateArrayFieldNotPresentCondition(fieldToken.version(), indent), offset));
 
             sb.append(String.format("\n" +
-                indent + "public void Set%1$s(byte[] src, int srcOffset)\n" +
+                "%1$s" +
+                indent + "public void Set%2$s(byte[] src, int srcOffset)\n" +
                 indent + "{\n" +
-                indent + INDENT + "Set%1$s(new ReadOnlySpan<byte>(src, srcOffset, src.Length - srcOffset));\n" +
+                indent + INDENT + "Set%2$s(new ReadOnlySpan<byte>(src, srcOffset, src.Length - srcOffset));\n" +
                 indent + "}\n",
+                generateDocumentation(indent, fieldToken),
                 propName, fieldLength, offset));
 
             sb.append(String.format("\n" +
-                indent + "public void Set%1$s(ReadOnlySpan<byte> src)\n" +
+                "%1$s" +
+                indent + "public void Set%2$s(ReadOnlySpan<byte> src)\n" +
                 indent + "{\n" +
-                indent + INDENT + "const int length = %2$d;\n" +
+                indent + INDENT + "const int length = %3$d;\n" +
                 indent + INDENT + "if (src.Length > length)\n" +
                 indent + INDENT + "{\n" +
                 indent + INDENT + INDENT + "ThrowHelper.ThrowWhenSpanLengthTooLarge(src.Length);\n" +
                 indent + INDENT + "}\n\n" +
-                indent + INDENT + "_buffer.SetBytes(_offset + %3$d, src);\n" +
+                indent + INDENT + "_buffer.SetBytes(_offset + %4$d, src);\n" +
                 indent + "}\n",
+                generateDocumentation(indent, fieldToken),
                 propName, fieldLength, offset));
 
             sb.append(String.format("\n" +
-                indent + "public void Set%1$s(string value)\n" +
+                "%1$s" +
+                indent + "public void Set%2$s(string value)\n" +
                 indent + "{\n" +
-                indent + INDENT + "_buffer.SetNullTerminatedBytesFromString(%1$sResolvedCharacterEncoding, " +
-                "value, _offset + %2$s, %1$sLength, %1$sNullValue);\n" +
-                indent + "}\n" +
-                indent + "public string Get%1$s()\n" +
+                indent + INDENT + "_buffer.SetNullTerminatedBytesFromString(%2$sResolvedCharacterEncoding, " +
+                "value, _offset + %3$s, %2$sLength, %2$sNullValue);\n" +
+                indent + "}\n\n" +
+                "%1$s" +
+                indent + "public string Get%2$s()\n" +
                 indent + "{\n" +
-                indent + INDENT + "return _buffer.GetStringFromNullTerminatedBytes(%1$sResolvedCharacterEncoding, " +
-                "_offset + %2$s, %1$sLength, %1$sNullValue);\n" +
+                indent + INDENT + "return _buffer.GetStringFromNullTerminatedBytes(%2$sResolvedCharacterEncoding, " +
+                "_offset + %3$s, %2$sLength, %2$sNullValue);\n" +
                 indent + "}\n",
+                generateDocumentation(indent, fieldToken),
                 propName, offset));
         }
 
